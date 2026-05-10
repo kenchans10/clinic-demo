@@ -4,6 +4,7 @@ import com.project.clinic.Specification.PatientSpecification;
 import com.project.clinic.dtos.GridSortDTO;
 import com.project.clinic.dtos.KendoGridRequestDTO;
 import com.project.clinic.dtos.PatientDTO;
+import com.project.clinic.dtos.PatientDetailDTO;
 import com.project.clinic.entities.Appointment;
 import com.project.clinic.entities.Doctor;
 import com.project.clinic.entities.Patient;
@@ -25,11 +26,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.print.Pageable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -48,7 +47,7 @@ public class PatientController {
     private final TreatmentHistoryRepository treatmentHistoryRepository;
 
     @GetMapping("/all")
-    public ResponseEntity<ApiResponse<List<PatientDTO>>> getPatient(){
+    public ResponseEntity<ApiResponse<List<PatientDetailDTO>>> getPatient(){
         long start = System.currentTimeMillis();
         log.info("Request Patient List");
         List<Patient> patientList = patientService.findAll();
@@ -62,8 +61,23 @@ public class PatientController {
         );
     }
 
+    @GetMapping("/get-patient-info")
+    public ResponseEntity<ApiResponse<List<PatientDTO>>> getPatientInfo(){
+        long start = System.currentTimeMillis();
+        log.info("Request Patient Info List");
+        List<Patient> patientList = patientService.findAll();
+        long end = System.currentTimeMillis();
+        log.info("API /all execution time: {} ms", (end - start));
+        return ResponseEntity.ok(
+                new ApiResponse<>((end - start),
+                        patientMapper.toPatientDTOList(patientList),
+                        patientList.stream().count()
+                )
+        );
+    }
+
     @PostMapping("/paginate")
-    public ResponseEntity<ApiResponse<List<PatientDTO>>> getPaginate(@RequestBody KendoGridRequestDTO requestDTO){
+    public ResponseEntity<ApiResponse<List<PatientDetailDTO>>> getPaginate(@RequestBody KendoGridRequestDTO requestDTO){
         long start = System.currentTimeMillis();
         log.info("Request Patient Paginate");
         PageRequest pageable;
@@ -122,7 +136,7 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PatientDTO>> getEmployee(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PatientDetailDTO>> getEmployee(@PathVariable String id) {
         long start = System.currentTimeMillis();
         log.info("Request Patient [id={}]", id);
         Patient patient = patientService.findById(id);

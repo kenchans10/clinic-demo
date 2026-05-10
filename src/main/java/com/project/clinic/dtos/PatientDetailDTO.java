@@ -4,9 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
-public class PatientDTO {
+public class PatientDetailDTO {
     private Long id;
     @NotBlank(message = "Name is required")
     private String name;
@@ -24,5 +25,9 @@ public class PatientDTO {
     private String phoneNo;
 
     private Boolean active;
+
+    List<AppointmentDTO> appointments;
+
+    List<TreatmentHistoryDTO> treatments;
 
 }

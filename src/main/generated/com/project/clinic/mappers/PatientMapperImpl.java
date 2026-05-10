@@ -2,6 +2,7 @@ package com.project.clinic.mappers;
 
 import com.project.clinic.dtos.AppointmentDTO;
 import com.project.clinic.dtos.PatientDTO;
+import com.project.clinic.dtos.PatientDetailDTO;
 import com.project.clinic.dtos.TreatmentHistoryDTO;
 import com.project.clinic.entities.Appointment;
 import com.project.clinic.entities.Doctor;
@@ -14,14 +15,14 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-05-10T14:16:01+0800",
+    date = "2026-05-10T23:26:40+0800",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 25.0.3 (Oracle Corporation)"
 )
 @Component
 public class PatientMapperImpl implements PatientMapper {
 
     @Override
-    public PatientDTO toDTO(Patient patient) {
+    public PatientDTO toPatientDTO(Patient patient) {
         if ( patient == null ) {
             return null;
         }
@@ -36,19 +37,53 @@ public class PatientMapperImpl implements PatientMapper {
         patientDTO.setBloodType( patient.getBloodType() );
         patientDTO.setPhoneNo( patient.getPhoneNo() );
         patientDTO.setActive( patient.getActive() );
-        patientDTO.setAppointments( appointmentListToAppointmentDTOList( patient.getAppointments() ) );
-        patientDTO.setTreatments( treatmentHistoryListToTreatmentHistoryDTOList( patient.getTreatments() ) );
 
         return patientDTO;
     }
 
     @Override
-    public List<PatientDTO> toDTOList(List<Patient> patientList) {
+    public List<PatientDTO> toPatientDTOList(List<Patient> patient) {
+        if ( patient == null ) {
+            return null;
+        }
+
+        List<PatientDTO> list = new ArrayList<PatientDTO>( patient.size() );
+        for ( Patient patient1 : patient ) {
+            list.add( toPatientDTO( patient1 ) );
+        }
+
+        return list;
+    }
+
+    @Override
+    public PatientDetailDTO toDTO(Patient patient) {
+        if ( patient == null ) {
+            return null;
+        }
+
+        PatientDetailDTO patientDetailDTO = new PatientDetailDTO();
+
+        patientDetailDTO.setId( patient.getId() );
+        patientDetailDTO.setName( patient.getName() );
+        patientDetailDTO.setIdType( patient.getIdType() );
+        patientDetailDTO.setIdNo( patient.getIdNo() );
+        patientDetailDTO.setDob( patient.getDob() );
+        patientDetailDTO.setBloodType( patient.getBloodType() );
+        patientDetailDTO.setPhoneNo( patient.getPhoneNo() );
+        patientDetailDTO.setActive( patient.getActive() );
+        patientDetailDTO.setAppointments( appointmentListToAppointmentDTOList( patient.getAppointments() ) );
+        patientDetailDTO.setTreatments( treatmentHistoryListToTreatmentHistoryDTOList( patient.getTreatments() ) );
+
+        return patientDetailDTO;
+    }
+
+    @Override
+    public List<PatientDetailDTO> toDTOList(List<Patient> patientList) {
         if ( patientList == null ) {
             return null;
         }
 
-        List<PatientDTO> list = new ArrayList<PatientDTO>( patientList.size() );
+        List<PatientDetailDTO> list = new ArrayList<PatientDetailDTO>( patientList.size() );
         for ( Patient patient : patientList ) {
             list.add( toDTO( patient ) );
         }
