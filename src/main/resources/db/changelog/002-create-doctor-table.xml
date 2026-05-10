@@ -6,9 +6,9 @@
                     http://www.liquibase.org/xml/ns/dbchangelog
                     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
 
-    <changeSet id="001-create-patient-table" author="alif">
+    <changeSet id="002-create-doctor-table" author="alif">
 
-        <createTable tableName="patient">
+        <createTable tableName="doctor">
 
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -16,15 +16,8 @@
             <column name="name" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
-            <column name="id_type" type="VARCHAR(100)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="id_no" type="VARCHAR(12)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="date_of_birth" type="DATE"/>
-            <column name="blood_type" type="VARCHAR(5)"/>
             <column name="phone_no" type="VARCHAR(20)"/>
+            <column name="email" type="VARCHAR(100)"/>
             <column name="active" type="BOOLEAN"/>
             <column name="created_at" type="TIMESTAMP"/>
             <column name="created_by" type="VARCHAR(100)"/>

@@ -6,25 +6,24 @@
                     http://www.liquibase.org/xml/ns/dbchangelog
                     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
 
-    <changeSet id="001-create-patient-table" author="alif">
+    <changeSet id="003-create-appointment-table" author="alif">
 
-        <createTable tableName="patient">
+        <createTable tableName="appointment">
 
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="name" type="VARCHAR(100)">
+            <column name="patient_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="id_type" type="VARCHAR(100)">
+            <column name="doctor_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="id_no" type="VARCHAR(12)">
+            <column name="appointment_date" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="date_of_birth" type="DATE"/>
-            <column name="blood_type" type="VARCHAR(5)"/>
-            <column name="phone_no" type="VARCHAR(20)"/>
+            <column name="status" type="VARCHAR(12)"/>
+            <column name="remark" type="TEXT"/>
             <column name="active" type="BOOLEAN"/>
             <column name="created_at" type="TIMESTAMP"/>
             <column name="created_by" type="VARCHAR(100)"/>
@@ -32,6 +31,22 @@
             <column name="updated_by" type="VARCHAR(100)"/>
 
         </createTable>
+
+        <!-- FK appointment.patient_id -> patient.id -->
+        <addForeignKeyConstraint
+                baseTableName="appointment"
+                baseColumnNames="patient_id"
+                referencedTableName="patient"
+                referencedColumnNames="id"
+                constraintName="fk_appointment_patient"/>
+
+        <!-- FK appointment.doctor_id -> doctor.id -->
+        <addForeignKeyConstraint
+                baseTableName="appointment"
+                baseColumnNames="doctor_id"
+                referencedTableName="doctor"
+                referencedColumnNames="id"
+                constraintName="fk_appointment_doctor"/>
 
     </changeSet>
 

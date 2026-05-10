@@ -1,7 +1,12 @@
 package com.project.clinic.mappers;
 
+import com.project.clinic.dtos.AppointmentDTO;
 import com.project.clinic.dtos.PatientDTO;
+import com.project.clinic.dtos.TreatmentHistoryDTO;
+import com.project.clinic.entities.Appointment;
+import com.project.clinic.entities.Doctor;
 import com.project.clinic.entities.Patient;
+import com.project.clinic.entities.TreatmentHistory;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.Generated;
@@ -9,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-05-09T11:18:56+0800",
+    date = "2026-05-10T11:49:10+0800",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 25.0.3 (Oracle Corporation)"
 )
 @Component
@@ -27,28 +32,14 @@ public class PatientMapperImpl implements PatientMapper {
         patientDTO.setName( patient.getName() );
         patientDTO.setIdType( patient.getIdType() );
         patientDTO.setIdNo( patient.getIdNo() );
+        patientDTO.setDob( patient.getDob() );
+        patientDTO.setBloodType( patient.getBloodType() );
         patientDTO.setPhoneNo( patient.getPhoneNo() );
         patientDTO.setActive( patient.getActive() );
+        patientDTO.setAppointments( appointmentListToAppointmentDTOList( patient.getAppointments() ) );
+        patientDTO.setTreatments( treatmentHistoryListToTreatmentHistoryDTOList( patient.getTreatments() ) );
 
         return patientDTO;
-    }
-
-    @Override
-    public Patient toEntity(PatientDTO patientDTO) {
-        if ( patientDTO == null ) {
-            return null;
-        }
-
-        Patient patient = new Patient();
-
-        patient.setId( patientDTO.getId() );
-        patient.setName( patientDTO.getName() );
-        patient.setIdType( patientDTO.getIdType() );
-        patient.setIdNo( patientDTO.getIdNo() );
-        patient.setPhoneNo( patientDTO.getPhoneNo() );
-        patient.setActive( patientDTO.getActive() );
-
-        return patient;
     }
 
     @Override
@@ -66,16 +57,89 @@ public class PatientMapperImpl implements PatientMapper {
     }
 
     @Override
-    public List<Patient> toEntityList(List<PatientDTO> dtos) {
-        if ( dtos == null ) {
+    public AppointmentDTO toDTO(Appointment appointment) {
+        if ( appointment == null ) {
             return null;
         }
 
-        List<Patient> list = new ArrayList<Patient>( dtos.size() );
-        for ( PatientDTO patientDTO : dtos ) {
-            list.add( toEntity( patientDTO ) );
+        AppointmentDTO appointmentDTO = new AppointmentDTO();
+
+        appointmentDTO.setDoctorName( appointmentDoctorName( appointment ) );
+        appointmentDTO.setAppointmentDate( appointment.getAppointmentDate() );
+
+        return appointmentDTO;
+    }
+
+    @Override
+    public TreatmentHistoryDTO toDTO(TreatmentHistory treatmentHistory) {
+        if ( treatmentHistory == null ) {
+            return null;
         }
 
-        return list;
+        TreatmentHistoryDTO treatmentHistoryDTO = new TreatmentHistoryDTO();
+
+        treatmentHistoryDTO.setDoctorName( treatmentHistoryDoctorName( treatmentHistory ) );
+        treatmentHistoryDTO.setVisitDate( treatmentHistory.getVisitDate() );
+        treatmentHistoryDTO.setDiagnosis( treatmentHistory.getDiagnosis() );
+        treatmentHistoryDTO.setTreatmentNotes( treatmentHistory.getTreatmentNotes() );
+        treatmentHistoryDTO.setMedication( treatmentHistory.getMedication() );
+
+        return treatmentHistoryDTO;
+    }
+
+    protected List<AppointmentDTO> appointmentListToAppointmentDTOList(List<Appointment> list) {
+        if ( list == null ) {
+            return null;
+        }
+
+        List<AppointmentDTO> list1 = new ArrayList<AppointmentDTO>( list.size() );
+        for ( Appointment appointment : list ) {
+            list1.add( toDTO( appointment ) );
+        }
+
+        return list1;
+    }
+
+    protected List<TreatmentHistoryDTO> treatmentHistoryListToTreatmentHistoryDTOList(List<TreatmentHistory> list) {
+        if ( list == null ) {
+            return null;
+        }
+
+        List<TreatmentHistoryDTO> list1 = new ArrayList<TreatmentHistoryDTO>( list.size() );
+        for ( TreatmentHistory treatmentHistory : list ) {
+            list1.add( toDTO( treatmentHistory ) );
+        }
+
+        return list1;
+    }
+
+    private String appointmentDoctorName(Appointment appointment) {
+        if ( appointment == null ) {
+            return null;
+        }
+        Doctor doctor = appointment.getDoctor();
+        if ( doctor == null ) {
+            return null;
+        }
+        String name = doctor.getName();
+        if ( name == null ) {
+            return null;
+        }
+        return name;
+    }
+
+    private String treatmentHistoryDoctorName(TreatmentHistory treatmentHistory) {
+        if ( treatmentHistory == null ) {
+            return null;
+        }
+        Doctor doctor = treatmentHistory.getDoctor();
+        if ( doctor == null ) {
+            return null;
+        }
+        String name = doctor.getName();
+        if ( name == null ) {
+            return null;
+        }
+        return name;
     }
 }

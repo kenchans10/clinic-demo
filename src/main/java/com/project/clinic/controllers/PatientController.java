@@ -1,9 +1,15 @@
 package com.project.clinic.controllers;
 
 import com.project.clinic.dtos.PatientDTO;
+import com.project.clinic.entities.Appointment;
+import com.project.clinic.entities.Doctor;
 import com.project.clinic.entities.Patient;
+import com.project.clinic.entities.TreatmentHistory;
 import com.project.clinic.mappers.PatientMapper;
+import com.project.clinic.repositories.AppointmentRepository;
+import com.project.clinic.repositories.DoctorRepository;
 import com.project.clinic.repositories.PatientRepository;
+import com.project.clinic.repositories.TreatmentHistoryRepository;
 import com.project.clinic.requests.ApiResponse;
 import com.project.clinic.services.PatientService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -27,6 +35,10 @@ public class PatientController {
     private final PatientMapper patientMapper;
     private final PatientService patientService;
     private final PatientRepository patientRepository;
+
+    private final DoctorRepository doctorRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final TreatmentHistoryRepository treatmentHistoryRepository;
 
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<PatientDTO>>> getPatient(){
@@ -59,15 +71,85 @@ public class PatientController {
     @GetMapping("/generate-data")
     public ResponseEntity<String> generatePatient(){
         Faker faker = new Faker();
+        String[] prefixes = {"010", "011", "012", "013", "014", "016", "017", "018", "019"};
+
+        List<Doctor> doctors = new ArrayList<>();
+
+        for (int i = 0; i < 20; i++) {
+            Doctor doctor = new Doctor();
+            doctor.setName(faker.name().fullName());
+            doctor.setPhoneNo(prefixes[faker.random().nextInt(prefixes.length)]
+                    + faker.number().digits(7));
+            doctor.setEmail(faker.internet().emailAddress());
+            doctor.setActive(true);
+
+            doctors.add(doctorRepository.save(doctor));
+        }
+
         for (int i = 0; i < 10000; i++) {
+            String prefix = prefixes[faker.random().nextInt(prefixes.length)];
+
             Patient p = new Patient();
             p.setName(faker.name().fullName());
             p.setIdType(faker.options().option("1", "3"));
             p.setIdNo(faker.number().digits(12));
-            p.setPhoneNo(faker.phoneNumber().phoneNumber());
+            //p.setDob(faker.date().birthday());
+            p.setBloodType("B+");
+            p.setPhoneNo(prefix + faker.number().digits(7));
             p.setActive(true);
 
-            patientRepository.save(p);
+            Patient savedPatient = patientRepository.save(p);
+
+            Doctor randomDoctor = doctors.get(faker.random().nextInt(doctors.size()));
+
+            Appointment appointment = new Appointment();
+            appointment.setPatient(savedPatient);
+            appointment.setDoctor(randomDoctor);
+            appointment.setAppointmentDate(LocalDateTime.now());
+            appointment.setActive(true);
+
+            appointmentRepository.save(appointment);
+
+            int totalHistory = faker.number().numberBetween(1, 6);
+
+            for (int j = 0; j < totalHistory; j++) {
+
+                TreatmentHistory history = new TreatmentHistory();
+                history.setPatient(savedPatient);
+                history.setDoctor(randomDoctor);
+                history.setVisitDate(
+                        LocalDateTime.now()
+                                .minusDays(faker.number().numberBetween(1, 365))
+                );
+
+                history.setDiagnosis(
+                        faker.options().option(
+                                "Fever",
+                                "Headache",
+                                "Diabetes",
+                                "Hypertension",
+                                "Flu",
+                                "Cough",
+                                "Back Pain"
+                        )
+                );
+
+                history.setTreatmentNotes(
+                        faker.lorem().paragraph()
+                );
+
+                history.setMedication(
+                        faker.options().option(
+                                "Paracetamol",
+                                "Antibiotics",
+                                "Ibuprofen",
+                                "Cough Syrup",
+                                "Vitamin C"
+                        )
+                );
+
+                treatmentHistoryRepository.save(history);
+            }
         }
         return ResponseEntity.ok("Generate Completed");
     }

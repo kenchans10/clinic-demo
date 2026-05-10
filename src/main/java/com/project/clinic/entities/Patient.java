@@ -2,10 +2,12 @@ package com.project.clinic.entities;
 
 import com.project.clinic.configs.Auditable;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -20,7 +22,19 @@ public class Patient extends Auditable {
     private String idType;
     @Column(name = "id_no")
     private String idNo;
+    @Column(name = "date_of_birth")
+    private LocalDate dob;
+    @Column(name = "blood_type")
+    private String bloodType;
     @Column(name = "phone_no")
     private String phoneNo;
     private Boolean active;
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
+    private List<Appointment> appointments;
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
+    private List<TreatmentHistory> treatments;
 }
