@@ -1,5 +1,8 @@
 package com.project.clinic.controllers;
 
+import com.project.clinic.Specification.PatientSpecification;
+import com.project.clinic.dtos.GridSortDTO;
+import com.project.clinic.dtos.KendoGridRequestDTO;
 import com.project.clinic.dtos.PatientDTO;
 import com.project.clinic.entities.Appointment;
 import com.project.clinic.entities.Doctor;
@@ -15,13 +18,16 @@ import com.project.clinic.services.PatientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Pageable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +35,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 @RequestMapping("/api/patients")
 public class PatientController {
 
@@ -49,7 +56,67 @@ public class PatientController {
         log.info("API /all execution time: {} ms", (end - start));
         return ResponseEntity.ok(
                 new ApiResponse<>((end - start),
-                        patientMapper.toDTOList(patientList)
+                        patientMapper.toDTOList(patientList),
+                        patientList.stream().count()
+                )
+        );
+    }
+
+    @PostMapping("/paginate")
+    public ResponseEntity<ApiResponse<List<PatientDTO>>> getPaginate(@RequestBody KendoGridRequestDTO requestDTO){
+        long start = System.currentTimeMillis();
+        log.info("Request Patient Paginate");
+        PageRequest pageable;
+
+        // SORT
+        if (requestDTO.getSort() != null
+                && !requestDTO.getSort().isEmpty()) {
+
+            GridSortDTO sortDTO =
+                    requestDTO.getSort().get(0);
+
+            Sort sort = sortDTO.getDir().equals("asc")
+                    ? Sort.by(sortDTO.getField()).ascending()
+                    : Sort.by(sortDTO.getField()).descending();
+
+            pageable = PageRequest.of(
+                    requestDTO.getPage() - 1,
+                    requestDTO.getTake(),
+                    sort
+            );
+
+        } else {
+
+            pageable = PageRequest.of(
+                    requestDTO.getPage() - 1,
+                    requestDTO.getTake()
+            );
+        }
+
+        Page<Patient> result;
+
+        if (requestDTO.getFilter() != null) {
+
+            Specification<Patient> specification =
+                    PatientSpecification.build(
+                            requestDTO.getFilter()
+                    );
+
+            result = patientRepository.findAll(
+                    specification,
+                    pageable
+            );
+
+        } else {
+
+            result = patientRepository.findAll(pageable);
+        }
+        long end = System.currentTimeMillis();
+        log.info("API /all execution time: {} ms", (end - start));
+        return ResponseEntity.ok(
+                new ApiResponse<>((end - start),
+                        patientMapper.toDTOList(result.getContent()),
+                        result.getTotalElements()
                 )
         );
     }
@@ -63,7 +130,8 @@ public class PatientController {
         log.info("API /id execution time: {} ms", (end - start));
         return ResponseEntity.ok(
                 new ApiResponse<>((end - start),
-                        patientMapper.toDTO(patient)
+                        patientMapper.toDTO(patient),
+                        null
                 )
         );
     }
@@ -93,7 +161,9 @@ public class PatientController {
             p.setName(faker.name().fullName());
             p.setIdType(faker.options().option("1", "3"));
             p.setIdNo(faker.number().digits(12));
-            //p.setDob(faker.date().birthday());
+            p.setDob(faker.date().birthday().toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate());
             p.setBloodType("B+");
             p.setPhoneNo(prefix + faker.number().digits(7));
             p.setActive(true);

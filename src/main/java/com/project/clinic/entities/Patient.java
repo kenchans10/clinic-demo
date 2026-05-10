@@ -31,10 +31,12 @@ public class Patient extends Auditable {
     private Boolean active;
 
     @ToString.Exclude
+    @OrderBy("appointmentDate DESC")
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Appointment> appointments;
 
     @ToString.Exclude
+    @OrderBy("visitDate DESC")
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<TreatmentHistory> treatments;
 }
